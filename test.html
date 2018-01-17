@@ -46,7 +46,7 @@
     </table>
 </div>
 <form id="myForm" action='javascript:alert("success")'>
-    <input id="video-file" type="file" />
+    <input id="video-file" type="text" />
     <input type="submit" value="Start" />
 </form>
 <script src="https://webrtc.github.io/adapter/adapter-5.0.4.js" type="text/javascript"></script>
@@ -177,7 +177,6 @@ $(document).ready(function() {
 
   // Handler for .ready() called.
 $( "form" ).submit(function( event ) {
-  alert( "Handler for .submit() called." );
     console.log("Loading video file: " + $('#video-file').val());
 
     utils.loadOpenCv(() => {
@@ -185,8 +184,9 @@ $( "form" ).submit(function( event ) {
             startAndStop.removeAttribute('disabled');
         });
         // Access filename from dialog
-        videoInput.src = 'cup.mp4';
-        videoInput.src = 'file://' + $('#video-file').val();
+        // videoInput.src = 'cup.mp4';
+	videoInput.setAttribute('crossOrigin', 'anonymous');
+        videoInput.src = $('#video-file').val();
     });
 
   event.preventDefault();
@@ -198,3 +198,11 @@ $( "form" ).submit(function( event ) {
 </body>
 </html>
 
+
+<!-- 
+This link works for some reason
+https://dl.dropboxusercontent.com/s/13zcls8b4qftpn1/temp.mp4?dl=1
+
+While this link does not work.
+https://www.dropbox.com/s/13zcls8b4qftpn1/temp.mp4?dl=1
+-->
