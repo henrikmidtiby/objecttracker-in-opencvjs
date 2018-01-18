@@ -86,8 +86,10 @@ roi.delete(); hsvRoi.delete(); mask.delete(); low.delete(); high.delete(); hsvRo
 // Setup the termination criteria, either 10 iteration or move by atleast 1 pt
 let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
 
+let rgb_image = new cv.Mat(video.height, video.width, cv.CV_8UC3);
 let hsv = new cv.Mat(video.height, video.width, cv.CV_8UC3);
 let memory = new cv.Mat(video.height, video.width, cv.CV_8UC3, new cv.Scalar(0, 0, 0));
+let destination = new cv.Mat(video.height, video.width, cv.CV_8UC3);
 let hsvVec = new cv.MatVector();
 hsvVec.push_back(hsv);
 let dst = new cv.Mat();
@@ -105,8 +107,8 @@ function processVideo() {
 
         // start processing.
         cap.read(frame);
-        cv.cvtColor(frame, hsv, cv.COLOR_RGBA2RGB);
-        cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+        cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
+        cv.cvtColor(rgb_image, hsv, cv.COLOR_RGB2HSV);
         cv.calcBackProject(hsvVec, [0], roiHist, dst, [0, 180], 1);
 
         // apply camshift to get the new location
@@ -122,8 +124,17 @@ function processVideo() {
         cv.line(frame, pts[1], pts[2], [255, 0, 0, 255], 3);
         cv.line(frame, pts[2], pts[3], [255, 0, 0, 255], 3);
         cv.line(frame, pts[3], pts[0], [255, 0, 0, 255], 3);
-        // cv.imshow('canvasOutput', frame);
-        cv.imshow('canvasOutput', memory);
+	//cv.add(frame, memory, combination, -1);
+	let mask = new cv.Mat();
+	let dtype = -1;
+	//console.log(frame.channels());
+	//console.log(frame.size());
+	//console.log(memory.channels());
+	//console.log(memory.size());
+        cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
+	cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
+        cv.imshow('canvasOutput', destination);
+        // cv.imshow('canvasOutput', memory)
 
         // schedule the next one.
         let delay = 1000/FPS - (Date.now() - begin);
@@ -190,8 +201,9 @@ $( "form" ).submit(function( event ) {
         videoInput.src = $('#video-file').val();
     });
 
-  event.preventDefault();
-  return false;
+    console.log("");
+    event.preventDefault();
+    return false;
 });
 
 });
