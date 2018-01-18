@@ -17,7 +17,7 @@
 </p>
 <div>
 <form id="myForm" action='javascript:alert("success")'>
-    <input id="video-file" type="text" value="https://dl.dropboxusercontent.com/s/13zcls8b4qftpn1/temp.mp4?dl=1"/>
+    <input id="video-file" type="text" value="https://dl.dropboxusercontent.com/s/rildaqcbsdv6jae/2018-01-17%2016.42.42.mp4?dl=0"/>
     <input type="submit" value="Start" />
 </form>
 <div class="control"><button id="startAndStop" disabled>Start</button></div>
@@ -31,6 +31,9 @@
         </td>
         <td>
             <canvas id="canvasOutput" width="640" height="480" ></canvas>
+        </td>
+        <td>
+            <canvas id="canvasDebugOutput" width="640" height="480" ></canvas>
         </td>
         <td></td>
         <td></td>
@@ -61,7 +64,8 @@ cap.read(frame);
 
 // hardcode the initial location of window
 var scale_factor = 2;
-let trackWindow = new cv.Rect(150*scale_factor, 60*scale_factor, 63*scale_factor, 125*scale_factor);
+//let trackWindow = new cv.Rect(150*scale_factor, 60*scale_factor, 63*scale_factor, 125*scale_factor);
+let trackWindow = new cv.Rect(296, 185, 10, 10);
 
 // set up the ROI for tracking
 let roi = frame.roi(trackWindow);
@@ -130,6 +134,7 @@ function processVideo() {
 	cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
         cv.imshow('canvasOutput', destination);
         // cv.imshow('canvasOutput', memory)
+        cv.imshow('canvasDebugOutput', dst)
 
         // schedule the next one.
         let delay = 1000/FPS - (Date.now() - begin);
