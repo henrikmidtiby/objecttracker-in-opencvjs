@@ -124,13 +124,8 @@ function processVideo() {
         cv.line(frame, pts[1], pts[2], [255, 0, 0, 255], 3);
         cv.line(frame, pts[2], pts[3], [255, 0, 0, 255], 3);
         cv.line(frame, pts[3], pts[0], [255, 0, 0, 255], 3);
-	//cv.add(frame, memory, combination, -1);
 	let mask = new cv.Mat();
 	let dtype = -1;
-	//console.log(frame.channels());
-	//console.log(frame.size());
-	//console.log(memory.channels());
-	//console.log(memory.size());
         cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
 	cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
         cv.imshow('canvasOutput', destination);
@@ -201,7 +196,8 @@ $( "form" ).submit(function( event ) {
         videoInput.src = $('#video-file').val();
     });
 
-    console.log("");
+    console.log("Mark region to track");
+    // TODO: Mark tracking region before tracking starts
     event.preventDefault();
     return false;
 });
