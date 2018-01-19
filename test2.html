@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
+    
+      <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
+      <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  
+<!--    <link rel="stylesheet" type="text/css" href="/css/result-light.css"> -->
+  
+
+  <style type="text/css">
+    body{
+    color:#666;
+}
+#drop {
+    border: 1px dashed #ccc;
+    width: 450px;
+    min-height: 35px;
+    top-margin: 0px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    display:box;
+    cursor:pointer;
+}
+#status {
+    width:450px;
+    top-margin: 0px;
+}
+#list {
+    width:450px;
+    top-margin: 0px;
+}
+.msg-drop{
+    padding:10px;
+}
+#fileBox{
+    display:none;
+}
+#videoInput {
+  border: 1px solid #ccc;
+}
+  </style>
+
+  <title></title>
+
+
+
+
+<script type='text/javascript'>//<![CDATA[
+
+$(window).load(function(){
+    $('#drop').click(function(){
+        console.log('click');
+        $('#fileBox').trigger('click');
+    });
+});
+if (window.FileReader) {
+    var drop;
+    addEventHandler(window, 'load', function () {
+        var status = document.getElementById('status');
+        drop = document.getElementById('drop');
+        var list = document.getElementById('list');
+
+        function cancel(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            return false;
+        }
+
+        // Tells the browser that we *can* drop on this target
+        addEventHandler(drop, 'dragover', cancel);
+        addEventHandler(drop, 'dragenter', cancel);
+
+        addEventHandler(drop, 'drop', function (e) {
+            e = e || window.event; // get window.event if e argument missing (in IE)   
+            if (e.preventDefault) {
+                e.preventDefault();
+            } // stops the browser from redirecting off to the image.
+
+            var dt = e.dataTransfer;
+            var files = dt.files;
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var reader = new FileReader();
+
+                //attach event handlers here...
+
+                reader.readAsDataURL(file);
+                addEventHandler(reader, 'loadend', function (e, file) {
+                    console.log('test');
+                    var bin = this.result;
+                                        
+                    status.innerHTML = 'Done loading.';
+
+                    //var video = document.createElement("video");
+                    var video = document.getElementById("videoInput");
+                    video.file = file;
+                    video.src = bin;
+                                       
+                }.bindToEventHandler(file));
+            }
+            return false;
+        });
+        Function.prototype.bindToEventHandler = function bindToEventHandler() {
+            var handler = this;
+            var boundParameters = Array.prototype.slice.call(arguments);
+            //create closure
+            return function (e) {
+                e = e || window.event; // get window.event if e argument missing (in IE)   
+                boundParameters.unshift(e);
+                handler.apply(this, boundParameters);
+            }
+        };
+    });
+} else {
+    document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
+}
+
+
+function addEventHandler(obj, evt, handler) {
+    if (obj.addEventListener) {
+        // W3C method
+        obj.addEventListener(evt, handler, false);
+    } else if (obj.attachEvent) {
+        // IE method.
+        obj.attachEvent('on' + evt, handler);
+    } else {
+        // Old school method.
+        obj['on' + evt] = handler;
+    }
+}
+
+
+//]]> 
+
+</script>
+
+  
+</head>
+
+<body>
+  <div id="drop"> 
+    <div class="msg-drop">
+    <span class="glyphicon glyphicon-cloud-upload cloud"></span>
+        Drop files here or click to <span id="browse">browse</span>.
+    </div>
+    
+</div>
+<input id="fileBox" type="file"/>    
+<div id="status"></div>
+<div id="list"></div>
+
+
+<video id="videoInput" width="640" height="480" muted loop controls></video>
+  
+</body>
+
+</html>
+
+
