@@ -215,8 +215,9 @@ cap.read(frame);
 
 // hardcode the initial location of window
 var scale_factor = 2;
-//let trackWindow = new cv.Rect(150*scale_factor, 60*scale_factor, 63*scale_factor, 125*scale_factor);
-let trackWindow = new cv.Rect(291, 180, 20, 20);
+var width_of_tracking_window = 40;
+var height_of_tracking_window = 40;
+let trackWindow = new cv.Rect(291, 180, width_of_tracking_window, height_of_tracking_window);
 
 // set up the ROI for tracking
 let roi = frame.roi(trackWindow);
@@ -308,6 +309,7 @@ let canvasContext = canvasOutput.getContext('2d');
 
 videoInput.addEventListener('canplay', () => {
     startAndStop.removeAttribute('disabled');
+    videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
         });
 
 startAndStop.addEventListener('click', () => {
@@ -325,7 +327,6 @@ startAndStop.addEventListener('click', () => {
 function onVideoStarted() {
     streaming = true;
     startAndStop.innerText = 'Stop';
-    videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
     track_object_in_video();
 }
 
