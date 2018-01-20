@@ -6,7 +6,7 @@
   <meta name="googlebot" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="opencv.js"></script>
-  <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
+  <script type="text/javascript" src="jquery-2.1.0.js"></script>
   <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
   
   <style type="text/css">
@@ -182,6 +182,21 @@ function grabCurrentFrameFromVideo()
 </tr>
 <tr>
 <td>
+<form id="tracking_window_location" onsubmit="event.preventDefault(); draw_tracking_start_position_on_current_frame();">
+  Left:<br>
+  <input type="text" id="tracking_window_x_coordinate" value=285><br>
+  Top:<br>
+  <input type="text" id="tracking_window_y_coordinate" value=170><br>
+  Width:<br>
+  <input type="text" id="tracking_window_width" value=40><br>
+  Height:<br>
+  <input type="text" id="tracking_window_height" value=40><br>
+  <input type="submit" value="Submit form">
+</form> 
+</td>
+</tr>
+<tr>
+<td>
 <canvas id="canvasLocateTracker" width="640" height="480" ></canvas>
 </td>
 </tr>
@@ -218,6 +233,7 @@ let canvasContext = canvasOutput.getContext('2d');
 videoInput.addEventListener('canplay', () => {
     startAndStop.removeAttribute('disabled');
     videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
+    grabCurrentFrameFromVideo();
         });
 
 startAndStop.addEventListener('click', () => {
@@ -244,6 +260,36 @@ function onVideoStopped() {
     startAndStop.innerText = 'Start';
 }
 
+function grabCurrentFrameFromVideo()
+{
+  let cap = new cv.VideoCapture(videoInput);
+  var currentFrameFromVideo = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC4);
+  cap.read(currentFrameFromVideo);
+
+  cv.imshow('canvasLocateTracker', currentFrameFromVideo);
+}
+
+function draw_tracking_start_position_on_current_frame()
+{
+  console.log("In draw_tracking_start_position_on_current_frame");
+  try {
+  let cap = new cv.VideoCapture(videoInput);
+  let currentFrameFromVideo = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC4);
+  cap.read(currentFrameFromVideo);
+  let width_of_tracking_window = Number($("#tracking_window_width").val()); 
+  let height_of_tracking_window = Number($("#tracking_window_height").val()); 
+  let tracking_window_x_coord = Number($("#tracking_window_x_coordinate").val()); // Left / right position
+  let tracking_window_y_coord = Number($("#tracking_window_y_coordinate").val()); // Up / down position
+  let trackWindow = new cv.Rect(tracking_window_x_coord, tracking_window_y_coord, width_of_tracking_window, height_of_tracking_window);
+  let [x, y, w, h] = [trackWindow.x, trackWindow.y, trackWindow.width, trackWindow.height];
+  cv.rectangle(currentFrameFromVideo, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
+  cv.imshow('canvasLocateTracker', currentFrameFromVideo);
+    } catch (err) {
+      console.log("Error in draw_tracking_start_position_on_current_frame");
+      console.log(err);
+  }
+}
+
 function track_object_in_video()
 {
 let cap = new cv.VideoCapture(videoInput);
@@ -254,10 +300,10 @@ cap.read(frame);
 
 // hardcode the initial location of window
 var scale_factor = 2;
-var width_of_tracking_window = 40;
-var height_of_tracking_window = 40;
-var tracking_window_x_coord = 291; // Left / right position
-var tracking_window_y_coord = 180; // Height
+let width_of_tracking_window = Number($("#tracking_window_width").val()); 
+let height_of_tracking_window = Number($("#tracking_window_height").val()); 
+let tracking_window_x_coord = Number($("#tracking_window_x_coordinate").val()); // Left / right position
+let tracking_window_y_coord = Number($("#tracking_window_y_coordinate").val()); // Up / down position
 let trackWindow = new cv.Rect(tracking_window_x_coord, tracking_window_y_coord, width_of_tracking_window, height_of_tracking_window);
 
 // set up the ROI for tracking
