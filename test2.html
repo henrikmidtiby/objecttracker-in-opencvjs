@@ -98,7 +98,6 @@ if (window.FileReader) {
                                         
                     status.innerHTML = 'Done loading.';
 
-                    //var video = document.createElement("video");
                     var video = document.getElementById("videoInput");
                     video.file = file;
                     video.src = bin;
@@ -247,12 +246,10 @@ function onVideoStopped() {
 
 function track_object_in_video()
 {
-
-let video = document.getElementById('videoInput');
-let cap = new cv.VideoCapture(video);
+let cap = new cv.VideoCapture(videoInput);
 
 // take first frame of the video
-let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+let frame = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC4);
 cap.read(frame);
 
 // hardcode the initial location of window
@@ -287,10 +284,10 @@ roi.delete(); hsvRoi.delete(); mask.delete(); low.delete(); high.delete(); hsvRo
 // Setup the termination criteria, either 10 iteration or move by atleast 1 pt
 let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
 
-let rgb_image = new cv.Mat(video.height, video.width, cv.CV_8UC3);
-let hsv = new cv.Mat(video.height, video.width, cv.CV_8UC3);
-let memory = new cv.Mat(video.height, video.width, cv.CV_8UC3, new cv.Scalar(0, 0, 0));
-let destination = new cv.Mat(video.height, video.width, cv.CV_8UC3);
+let rgb_image = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC3);
+let hsv = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC3);
+let memory = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC3, new cv.Scalar(0, 0, 0));
+let destination = new cv.Mat(videoInput.height, videoInput.width, cv.CV_8UC3);
 let hsvVec = new cv.MatVector();
 hsvVec.push_back(hsv);
 let dst = new cv.Mat();
