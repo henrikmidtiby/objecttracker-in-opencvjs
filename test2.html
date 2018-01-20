@@ -200,8 +200,7 @@ function grabCurrentFrameFromVideo()
 
 
 <script>
-document.getElementById("canvasOutput").addEventListener('mousemove', grabCurrentFrameFromVideo);
-
+// document.getElementById("canvasOutput").addEventListener('mousemove', grabCurrentFrameFromVideo);
 
 
 function track_object_in_video()
@@ -217,7 +216,7 @@ cap.read(frame);
 // hardcode the initial location of window
 var scale_factor = 2;
 //let trackWindow = new cv.Rect(150*scale_factor, 60*scale_factor, 63*scale_factor, 125*scale_factor);
-let trackWindow = new cv.Rect(296, 185, 10, 10);
+let trackWindow = new cv.Rect(291, 180, 20, 20);
 
 // set up the ROI for tracking
 let roi = frame.roi(trackWindow);
@@ -268,26 +267,23 @@ function processVideo() {
         cv.cvtColor(rgb_image, hsv, cv.COLOR_RGB2HSV);
         cv.calcBackProject(hsvVec, [0], roiHist, dst, [0, histogram_size], 1);
 
-        // apply camshift to get the new location
-        [trackBox, trackWindow] = cv.CamShift(dst, trackWindow, termCrit);
+        // Apply meanshift to get the new location
+        // and it also returns number of iterations meanShift took to converge,
+        // which is useless in this demo.
+        [, trackWindow] = cv.meanShift(dst, trackWindow, termCrit);
 
         // Draw it on image
-        let pts = cv.rotatedRectPoints(trackBox);
-        cv.line(memory, pts[0], pts[1], [255, 0, 0, 255], 3);
-        cv.line(memory, pts[1], pts[2], [255, 0, 0, 255], 3);
-        cv.line(memory, pts[2], pts[3], [255, 0, 0, 255], 3);
-        cv.line(memory, pts[3], pts[0], [255, 0, 0, 255], 3);
-        cv.line(frame, pts[0], pts[1], [255, 0, 0, 255], 3);
-        cv.line(frame, pts[1], pts[2], [255, 0, 0, 255], 3);
-        cv.line(frame, pts[2], pts[3], [255, 0, 0, 255], 3);
-        cv.line(frame, pts[3], pts[0], [255, 0, 0, 255], 3);
+        let [x, y, w, h] = [trackWindow.x, trackWindow.y, trackWindow.width, trackWindow.height];
+        cv.rectangle(memory, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
+        cv.rectangle(frame, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
+
         let mask = new cv.Mat();
         let dtype = -1;
         cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
         cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
         cv.imshow('canvasOutput', destination);
-        // cv.imshow('canvasOutput', memory)
-        cv.imshow('canvasDebugOutput', dst)
+        // cv.imshow('canvasOutput', memory);
+        cv.imshow('canvasDebugOutput', dst);
 
         // schedule the next one.
         let delay = 1000/FPS - (Date.now() - begin);
@@ -300,9 +296,9 @@ function processVideo() {
 // schedule the first one.
 setTimeout(processVideo, 0);
 
-
-
 }
+
+
 
 let streaming = false;
 let videoInput = document.getElementById('videoInput');
@@ -330,7 +326,7 @@ function onVideoStarted() {
     streaming = true;
     startAndStop.innerText = 'Stop';
     videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
-    //track_object_in_video();
+    track_object_in_video();
 }
 
 function onVideoStopped() {
