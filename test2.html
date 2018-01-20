@@ -208,6 +208,43 @@ function grabCurrentFrameFromVideo()
 // document.getElementById("canvasOutput").addEventListener('mousemove', grabCurrentFrameFromVideo);
 
 
+
+
+let streaming = false;
+let videoInput = document.getElementById('videoInput');
+let startAndStop = document.getElementById('startAndStop');
+let canvasOutput = document.getElementById('canvasOutput');
+let canvasContext = canvasOutput.getContext('2d');
+
+videoInput.addEventListener('canplay', () => {
+    startAndStop.removeAttribute('disabled');
+    videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
+        });
+
+startAndStop.addEventListener('click', () => {
+    if (!streaming) {
+        videoInput.play().then(() => {
+            onVideoStarted();
+        });
+    } else {
+        videoInput.pause();
+        //videoInput.currentTime = 0;
+        onVideoStopped();
+    }
+});
+
+function onVideoStarted() {
+    streaming = true;
+    startAndStop.innerText = 'Stop';
+    track_object_in_video();
+}
+
+function onVideoStopped() {
+    streaming = false;
+    //canvasContext.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
+    startAndStop.innerText = 'Start';
+}
+
 function track_object_in_video()
 {
 
@@ -222,7 +259,9 @@ cap.read(frame);
 var scale_factor = 2;
 var width_of_tracking_window = 40;
 var height_of_tracking_window = 40;
-let trackWindow = new cv.Rect(291, 180, width_of_tracking_window, height_of_tracking_window);
+var tracking_window_x_coord = 291; // Left / right position
+var tracking_window_y_coord = 180; // Height
+let trackWindow = new cv.Rect(tracking_window_x_coord, tracking_window_y_coord, width_of_tracking_window, height_of_tracking_window);
 
 // set up the ROI for tracking
 let roi = frame.roi(trackWindow);
@@ -304,42 +343,6 @@ setTimeout(processVideo, 0);
 
 }
 
-
-
-let streaming = false;
-let videoInput = document.getElementById('videoInput');
-let startAndStop = document.getElementById('startAndStop');
-let canvasOutput = document.getElementById('canvasOutput');
-let canvasContext = canvasOutput.getContext('2d');
-
-videoInput.addEventListener('canplay', () => {
-    startAndStop.removeAttribute('disabled');
-    videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
-        });
-
-startAndStop.addEventListener('click', () => {
-    if (!streaming) {
-        videoInput.play().then(() => {
-            onVideoStarted();
-        });
-    } else {
-        videoInput.pause();
-        //videoInput.currentTime = 0;
-        onVideoStopped();
-    }
-});
-
-function onVideoStarted() {
-    streaming = true;
-    startAndStop.innerText = 'Stop';
-    track_object_in_video();
-}
-
-function onVideoStopped() {
-    streaming = false;
-    //canvasContext.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
-    //startAndStop.innerText = 'Start';
-}
 
 </script>
 
