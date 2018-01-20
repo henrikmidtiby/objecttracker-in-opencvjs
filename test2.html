@@ -161,19 +161,21 @@ function grabCurrentFrameFromVideo()
 </head>
 
 <body>
-  <div id="drop"> 
-    <div class="msg-drop">
-    <span class="glyphicon glyphicon-cloud-upload cloud"></span>
-        Drop files here or click to <span id="browse">browse</span>.
-    </div>
-    
-</div>
-<input id="fileBox" type="file"/>    
-<div id="status"></div>
-<div id="list"></div>
-
 
 <table cellpadding="0" cellspacing="0" width="0" border="0">
+<tr>
+<td>
+	<div id="drop"> 
+		<div class="msg-drop">
+			<span class="glyphicon glyphicon-cloud-upload cloud"></span>
+			Drop files here or click to <span id="browse">browse</span>.
+		</div>
+	</div>
+	<input id="fileBox" type="file"/>    
+	<div id="status"></div>
+	<div id="list"></div>
+</td>
+</tr>
 <tr>
 <td>
 <video id="videoInput" width="640" height="480" muted loop controls></video>
@@ -181,7 +183,17 @@ function grabCurrentFrameFromVideo()
 </tr>
 <tr>
 <td>
+<div class="control"><button id="startAndStop" disabled>Start</button></div>
+</td>
+</tr>
+<tr>
+<td>
 <canvas id="canvasOutput" width="640" height="480" ></canvas>
+</td>
+</tr>
+<tr>
+<td>
+<canvas id="canvasDebugOutput" width="640" height="480" ></canvas>
 </td>
 </tr>
 </table>
@@ -189,6 +201,144 @@ function grabCurrentFrameFromVideo()
 
 <script>
 document.getElementById("canvasOutput").addEventListener('mousemove', grabCurrentFrameFromVideo);
+
+
+
+function track_object_in_video()
+{
+
+let video = document.getElementById('videoInput');
+let cap = new cv.VideoCapture(video);
+
+// take first frame of the video
+let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+cap.read(frame);
+
+// hardcode the initial location of window
+var scale_factor = 2;
+//let trackWindow = new cv.Rect(150*scale_factor, 60*scale_factor, 63*scale_factor, 125*scale_factor);
+let trackWindow = new cv.Rect(296, 185, 10, 10);
+
+// set up the ROI for tracking
+let roi = frame.roi(trackWindow);
+let hsvRoi = new cv.Mat();
+cv.cvtColor(roi, hsvRoi, cv.COLOR_RGBA2RGB);
+cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
+let mask = new cv.Mat();
+let lowScalar = new cv.Scalar(0, 100, 100);
+let highScalar = new cv.Scalar(255, 255, 255);
+let low = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), lowScalar);
+let high = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), highScalar);
+cv.inRange(hsvRoi, low, high, mask);
+let roiHist = new cv.Mat();
+let hsvRoiVec = new cv.MatVector();
+hsvRoiVec.push_back(hsvRoi);
+let histogram_size = 180;
+cv.calcHist(hsvRoiVec, [0], mask, roiHist, [180], [0, histogram_size]);
+cv.normalize(roiHist, roiHist, 0, 255, cv.NORM_MINMAX);
+
+// delete useless mats.
+roi.delete(); hsvRoi.delete(); mask.delete(); low.delete(); high.delete(); hsvRoiVec.delete();
+
+// Setup the termination criteria, either 10 iteration or move by atleast 1 pt
+let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
+
+let rgb_image = new cv.Mat(video.height, video.width, cv.CV_8UC3);
+let hsv = new cv.Mat(video.height, video.width, cv.CV_8UC3);
+let memory = new cv.Mat(video.height, video.width, cv.CV_8UC3, new cv.Scalar(0, 0, 0));
+let destination = new cv.Mat(video.height, video.width, cv.CV_8UC3);
+let hsvVec = new cv.MatVector();
+hsvVec.push_back(hsv);
+let dst = new cv.Mat();
+let trackBox = null;
+
+const FPS = 30;
+function processVideo() {
+    try {
+        if (!streaming) {
+            // clean and stop.
+            frame.delete(); dst.delete(); hsvVec.delete(); roiHist.delete(); hsv.delete();
+            return;
+        }
+        let begin = Date.now();
+
+        // start processing.
+        cap.read(frame);
+        cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
+        cv.cvtColor(rgb_image, hsv, cv.COLOR_RGB2HSV);
+        cv.calcBackProject(hsvVec, [0], roiHist, dst, [0, histogram_size], 1);
+
+        // apply camshift to get the new location
+        [trackBox, trackWindow] = cv.CamShift(dst, trackWindow, termCrit);
+
+        // Draw it on image
+        let pts = cv.rotatedRectPoints(trackBox);
+        cv.line(memory, pts[0], pts[1], [255, 0, 0, 255], 3);
+        cv.line(memory, pts[1], pts[2], [255, 0, 0, 255], 3);
+        cv.line(memory, pts[2], pts[3], [255, 0, 0, 255], 3);
+        cv.line(memory, pts[3], pts[0], [255, 0, 0, 255], 3);
+        cv.line(frame, pts[0], pts[1], [255, 0, 0, 255], 3);
+        cv.line(frame, pts[1], pts[2], [255, 0, 0, 255], 3);
+        cv.line(frame, pts[2], pts[3], [255, 0, 0, 255], 3);
+        cv.line(frame, pts[3], pts[0], [255, 0, 0, 255], 3);
+        let mask = new cv.Mat();
+        let dtype = -1;
+        cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
+        cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
+        cv.imshow('canvasOutput', destination);
+        // cv.imshow('canvasOutput', memory)
+        cv.imshow('canvasDebugOutput', dst)
+
+        // schedule the next one.
+        let delay = 1000/FPS - (Date.now() - begin);
+        setTimeout(processVideo, delay);
+    } catch (err) {
+        //utils.printError(err);
+    }
+};
+
+// schedule the first one.
+setTimeout(processVideo, 0);
+
+
+
+}
+
+let streaming = false;
+let videoInput = document.getElementById('videoInput');
+let startAndStop = document.getElementById('startAndStop');
+let canvasOutput = document.getElementById('canvasOutput');
+let canvasContext = canvasOutput.getContext('2d');
+
+videoInput.addEventListener('canplay', () => {
+    startAndStop.removeAttribute('disabled');
+        });
+
+startAndStop.addEventListener('click', () => {
+    if (!streaming) {
+        videoInput.play().then(() => {
+            onVideoStarted();
+        });
+    } else {
+        videoInput.pause();
+        //videoInput.currentTime = 0;
+        onVideoStopped();
+    }
+});
+
+function onVideoStarted() {
+    streaming = true;
+    startAndStop.innerText = 'Stop';
+    videoInput.height = videoInput.width * (videoInput.videoHeight / videoInput.videoWidth);
+    //track_object_in_video();
+}
+
+function onVideoStopped() {
+    streaming = false;
+    //canvasContext.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
+    //startAndStop.innerText = 'Start';
+}
+
 </script>
 
 </body>
