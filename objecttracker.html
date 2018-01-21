@@ -318,7 +318,7 @@ let trackWindow = new cv.Rect(tracking_window_x_coord, tracking_window_y_coord, 
 let roi = frame.roi(trackWindow);
 let hsvRoi = new cv.Mat();
 cv.cvtColor(roi, hsvRoi, cv.COLOR_RGBA2RGB);
-//cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
+cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
 let mask = new cv.Mat();
 let lowScalar = new cv.Scalar(0, 10, 10);
 let highScalar = new cv.Scalar(255, 255, 255);
@@ -364,7 +364,7 @@ function processVideo() {
         cap.read(frame);
         cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
         cv.cvtColor(frame, hsv, cv.COLOR_RGBA2RGB);
-        // cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+        cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
         let hsvVec = new cv.MatVector();
         hsvVec.push_back(hsv);
         cv.calcBackProject(hsvVec, [0, 1, 2], roiHist, dst, [0, histogram_size, 0, 255, 0, 255], 1);
