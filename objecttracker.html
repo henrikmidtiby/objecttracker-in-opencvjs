@@ -319,24 +319,18 @@ let roi = frame.roi(trackWindow);
 let hsvRoi = new cv.Mat();
 cv.cvtColor(roi, hsvRoi, cv.COLOR_RGBA2RGB);
 cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
-let mask = new cv.Mat();
-let lowScalar = new cv.Scalar(0, 10, 10);
-let highScalar = new cv.Scalar(255, 255, 255);
-let low = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), lowScalar);
-let high = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), highScalar);
-cv.inRange(hsvRoi, low, high, mask);
 let roiHist = new cv.Mat();
 let hsvRoiVec = new cv.MatVector();
 hsvRoiVec.push_back(hsvRoi);
 let hsv_bins = 8;
-let histogram_size = 256;
 let saturation_bins = 8;
 let intensity_bins = 8;
-cv.calcHist(hsvRoiVec, [0, 1, 2], mask, roiHist, [hsv_bins, saturation_bins, intensity_bins], [0, histogram_size, 0, 255, 0, 255]);
-cv.normalize(roiHist, roiHist, 0, 255, cv.NORM_MINMAX);
+let mask = new cv.Mat();
+cv.calcHist(hsvRoiVec, [0, 1, 2], mask, roiHist, [hsv_bins, saturation_bins, intensity_bins], [0, 256, 0, 256, 0, 256]);
+cv.normalize(roiHist, roiHist, 50, 235, cv.NORM_MINMAX);
 
 // delete useless mats.
-roi.delete(); hsvRoi.delete(); mask.delete(); low.delete(); high.delete(); hsvRoiVec.delete();
+roi.delete(); hsvRoi.delete(); hsvRoiVec.delete();
 
 // Setup the termination criteria, either 10 iteration or move by atleast 1 pt
 let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
@@ -367,7 +361,7 @@ function processVideo() {
         cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
         let hsvVec = new cv.MatVector();
         hsvVec.push_back(hsv);
-        cv.calcBackProject(hsvVec, [0, 1, 2], roiHist, dst, [0, histogram_size, 0, 255, 0, 255], 1);
+        cv.calcBackProject(hsvVec, [0, 1, 2], roiHist, dst, [0, 256, 0, 256, 0, 256], 1);
 
         // Apply meanshift to get the new location
         // and it also returns number of iterations meanShift took to converge,
@@ -379,7 +373,6 @@ function processVideo() {
         cv.rectangle(memory, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
         cv.rectangle(frame, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
 
-        let mask = new cv.Mat();
         let dtype = -1;
         cv.cvtColor(frame, rgb_image, cv.COLOR_RGBA2RGB);
         cv.addWeighted(rgb_image, 0.5, memory, 0.4, 0, destination, -1);
