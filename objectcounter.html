@@ -12,6 +12,7 @@
   <style type="text/css">
     body{
     color:#666;
+    margin: 10px;
 }
 #drop {
     border: 1px dashed #ccc;
@@ -37,12 +38,6 @@
 }
 #fileBox{
     display:none;
-}
-#videoInput {
-  border: 1px solid #ccc;
-}
-#canvasOutput {
-  border: 1px solid #ccc;
 }
   </style>
 
@@ -102,8 +97,7 @@ if (window.FileReader) {
                     image.file = file;
                     image.src = bin;
 
-                    startAndStop.removeAttribute('disabled');
-                                       
+                    count_objects_in_image()
                 }.bindToEventHandler(file));
             }
             return false;
@@ -138,22 +132,6 @@ function addEventHandler(obj, evt, handler) {
 }
 
 
-function grabCurrentFrameFromVideo()
-{
-  let video = document.getElementById('videoInput');
-  let cap = new cv.VideoCapture(video);
-
-  // take first frame of the video
-  let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-  cap.read(frame);
-
-  cv.imshow('canvasOutput', frame);
-}
-
-
-
-
-
 //]]> 
 
 </script>
@@ -162,15 +140,13 @@ function grabCurrentFrameFromVideo()
 </head>
 
 <body>
-<h1>Color based object tracker</h1>
-<p>Developed by Henrik Skov Midtiby, henrikmidtiby@gmail.com</p>
+<h1>Object counter</h1>
+<p>Developed by Henrik Skov Midtiby, hemi@mmmi.sdu.dk</p>
 
 <h2>User guide</h2>
-<p>1. Find a video file on your computer.</p>
-<p>2. Drag the file onto the field "Drop files here"</p>
-<p>3. Position a rectangle on top of the object to track, by adjusting the numbers in the text fields next to the submit field button. Test the position by clicking on submit.</p>
-<p>4. Press the start button.</p>
-<p>5. Watch the computer track the object.</p>
+<p>1. Find an image file on your computer.</p>
+<p>2. Drag the file onto the field "Drop image file here"</p>
+<p>3. Press the start button.</p>
 <table cellpadding="0" cellspacing="0" width="0" border="0">
 <tr>
 <td>
@@ -189,32 +165,22 @@ function grabCurrentFrameFromVideo()
 <img id="imageInput"/>
 </td>
 </tr>
-<tr>
-<td>
-<div class="control"><button id="startAndStop" disabled>Count number of bright objects</button></div>
-</td>
-</tr>
-<tr>
-<td>
-<canvas id="canvasOutput" width="640" height="480" ></canvas>
-</td>
-</tr>
 </table>
 
+<h2>Coordinates, area and perimeter of objects</h2>
 <div id="tracked_coordinates_ID"></div>
 
 <script>
-let startAndStop = document.getElementById('startAndStop');
 let tracked_coordinates = document.getElementById('tracked_coordinates_ID');
 
-tracked_coordinates.innerHTML += 'Coordinates';
+tracked_coordinates.innerHTML += '';
 
-
-startAndStop.addEventListener('click', () => {
+function count_objects_in_image()
+{
   let src = cv.imread('imageInput');
   
   cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-  cv.threshold(src, src, 120, 200, cv.THRESH_BINARY);
+  cv.threshold(src, src, 120, 255, cv.THRESH_BINARY);
   let contours = new cv.MatVector();
   let hierarchy = new cv.Mat();
 
@@ -230,10 +196,7 @@ startAndStop.addEventListener('click', () => {
     let perimeter = cv.arcLength(cnt, false);
     tracked_coordinates.innerHTML += i + '\t' + area + '\t' + perimeter.toFixed(1) + "<br>\n";
   }
-
-});
-
-
+}
 
 </script>
 
