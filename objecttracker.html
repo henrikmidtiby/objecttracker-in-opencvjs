@@ -28,10 +28,6 @@
     width:450px;
     top-margin: 0px;
 }
-#list {
-    width:450px;
-    top-margin: 0px;
-}
 .msg-drop{
     padding:10px;
 }
@@ -64,7 +60,6 @@ if (window.FileReader) {
     addEventHandler(window, 'load', function () {
         var status = document.getElementById('status');
         drop = document.getElementById('drop');
-        var list = document.getElementById('list');
 
         function cancel(e) {
             if (e.preventDefault) {
@@ -174,13 +169,11 @@ function grabCurrentFrameFromVideo()
 <td>
 	<div id="drop"> 
 		<div class="msg-drop">
-			<span class="glyphicon glyphicon-cloud-upload cloud"></span>
 			Drop video file here.
 		</div>
 	</div>
 	<input id="fileBox" type="file"/>    
 	<div id="status"></div>
-	<div id="list"></div>
 </td>
 </tr>
 <tr>
@@ -230,9 +223,6 @@ function grabCurrentFrameFromVideo()
 
 <script>
 // document.getElementById("canvasOutput").addEventListener('mousemove', grabCurrentFrameFromVideo);
-
-
-
 
 let streaming = false;
 let videoInput = document.getElementById('videoInput');
