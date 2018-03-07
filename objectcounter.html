@@ -83,7 +83,7 @@ if (window.FileReader) {
 
                 reader.readAsDataURL(file);
                 addEventHandler(reader, 'loadend', function (e, file) {
-                    console.log('test');
+                    console.log('Loading file.');
                     var bin = this.result;
                                         
                     status.innerHTML = 'Done loading.';
@@ -92,7 +92,9 @@ if (window.FileReader) {
                     image.file = file;
                     image.src = bin;
 
-                    count_objects_in_image()
+                    console.log('Done loading file.');
+
+                    setTimeout(count_objects_in_image, 1000);
                 }.bindToEventHandler(file));
             }
             return false;
@@ -141,7 +143,7 @@ function addEventHandler(obj, evt, handler) {
 <h2>User guide</h2>
 <p>1. Find an image file on your computer.</p>
 <p>2. Drag the file onto the field "Drop image file here"</p>
-<p>3. Press the start button.</p>
+<p>3. Read the coordinates shown below the image.</p>
 <table cellpadding="0" cellspacing="0" width="0" border="0">
 <tr>
 <td>
