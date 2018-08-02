@@ -1,0 +1,43 @@
+---
+title: "Grass cutter"
+author: "Henrik Skov Midtiby"
+date: "4 feb 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+data <- readr::read_delim('data_grass_cutter.txt', 
+                          delim=' ')
+```
+
+```{r}
+data %>%
+  ggplot() + 
+  geom_line(aes(frame, x), color='red') +
+  geom_line(aes(frame, y), color='darkgreen')
+```
+
+
+```{r}
+data %>%
+  ggplot() + 
+  geom_path(aes(x, -y, color=frame))
+```
+
+```{r}
+data %>%
+  ggplot() + 
+  geom_line(aes(frame, x, color=y))
+```
+
+```{r}
+data %>%
+  ggplot() + 
+  geom_line(aes(frame, y, color=x))
+```
+
